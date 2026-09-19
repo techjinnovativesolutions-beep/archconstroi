@@ -13,8 +13,8 @@ export const SIGNATURE = "Tech J Innovative Solutions";
 export const COUNTRY = "Angola";
 export const PHONE = "+244 924 729 664 | +244 926 199 535";
 export const EMAIL = "conctatos@archconstroi.com";
-export const ADDRESS = "Luanda, Angola"; // actualize aqui a morada exacta
-export const MAPS_QUERY = "Luanda, Angola";
+export const ADDRESS = "Camama, Município do Talatona, Luanda, Angola";
+export const MAPS_QUERY = "-8.937537,13.263174";
 
 export const SESSION_COOKIE = "arch_sid";
 export const SESSION_MAX_AGE = 60 * 60 * 4; // 4 horas
