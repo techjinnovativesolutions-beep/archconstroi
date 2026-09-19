@@ -1,0 +1,54 @@
+// Arch Constroi – configuração Cloudflare Workers
+// Desenvolvido por: Tech J Innovative Solutions
+//
+// Deploy:  npm run deploy
+// Local:   npm run dev        (http://localhost:8080, D1 + DO locais)
+// Antes do primeiro deploy remoto:
+//   npx wrangler d1 create archconstroi-db   → cole o database_id abaixo
+//   npx wrangler secret put ARCH_SECRET_KEY  → chave p/ assinar sessões
+//   npm run db:migrate                       → cria esquema + migra dados
+{
+  "name": "archconstroi",
+  "main": "src/worker.js",
+  "compatibility_date": "2026-06-01",
+
+  // Frontend: HTML/CSS/imagens/JS/PDF servidos como Assets; o Worker
+  // continua a tratar todas as rotas (binding ASSETS).
+  "assets": {
+    "directory": "./static",
+    "binding": "ASSETS"
+  },
+
+  // Base de dados D1 (SQLite) — mesma estrutura e dados do antigo
+  // data/archconstroi.db, migrados via migrations/0002_seed.sql.
+  // Substitua o database_id pelo devolvido por `wrangler d1 create`.
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "archconstroi-db",
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "migrations"
+    }
+  ],
+
+  // Tempo real (WebSocket) e rate limiting global.
+  "durable_objects": {
+    "bindings": [
+      { "name": "CHAT_HUB", "class_name": "ChatHub" },
+      { "name": "RATE_LIMITER", "class_name": "RateLimiter" }
+    ]
+  },
+  "migrations": [
+    { "tag": "v1", "new_classes": ["ChatHub", "RateLimiter"] }
+  ],
+
+  // Os templates mantêm-se ficheiros .html (importados como texto e
+  // renderizados pelo motor src/render.js no Worker).
+  "rules": [
+    { "type": "Text", "globs": ["templates/**/*.html"], "fallthrough": true }
+  ],
+
+  "observability": {
+    "enabled": true
+  }
+}

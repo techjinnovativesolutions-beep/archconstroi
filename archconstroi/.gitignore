@@ -1,0 +1,10 @@
+# Dependências / artefactos locais
+node_modules/
+.wrangler/
+.dev.vars
+.venv/
+__pycache__/
+*.pyc
+
+# Estado local do wrangler dev (D1/DO locais)
+.state/

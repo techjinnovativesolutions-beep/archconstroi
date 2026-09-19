@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<!--
+  Arch Constroi – Painel Administrativo
+  Desenvolvido por: Tech J Innovative Solutions
+-->
+<html lang="pt" data-tema="noite">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Acesso Restrito | {{ cfg.SITE_NAME }}</title>
+<link rel="icon" href="/static/img/logo/logo.jpeg">
+<link rel="stylesheet" href="/static/css/estilo.css">
+</head>
+<body>
+<div class="login-bg">
+  <div class="login-card">
+    <img src="/static/img/logo/logo.jpeg" alt="{{ cfg.SITE_NAME }}">
+    <h1>Painel Administrativo</h1>
+    <p class="sub">{{ cfg.SITE_FULL_NAME }}</p>
+    {% if erro %}<div class="aviso erro" style="display:block">{{ erro }}</div>{% endif %}
+    <form method="post" action="/painel/login" autocomplete="off">
+      <input type="hidden" name="csrf" value="{{ csrf }}">
+      <div class="campo">
+        <label for="username">Utilizador</label>
+        <input id="username" name="username" type="text" maxlength="60" required autofocus>
+      </div>
+      <div class="campo">
+        <label for="password">Palavra-passe</label>
+        <input id="password" name="password" type="password" maxlength="120" required>
+      </div>
+      <button class="btn btn-p" type="submit" style="width:100%;justify-content:center">Entrar em sessão segura</button>
+    </form>
+    <p style="font-size:.75rem;color:var(--cinza);text-align:center;margin-top:18px">
+      Sessão assinada · PBKDF2-SHA256 · protecção contra força bruta activa<br>
+      <a href="/" style="color:var(--vermelho-2)">← Voltar ao site</a>
+    </p>
+  </div>
+</div>
+</body>
+</html>

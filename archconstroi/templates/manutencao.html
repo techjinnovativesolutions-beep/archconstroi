@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<!-- Arch Constroi | Desenvolvido por: Tech J Innovative Solutions -->
+<html lang="pt" data-tema="noite"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Indisponível | {{ cfg.SITE_NAME }}</title>
+<link rel="stylesheet" href="/static/css/estilo.css">
+<link rel="icon" href="/static/img/logo/logo.jpeg"></head>
+<body><div class="login-bg"><div class="login-card" style="text-align:center">
+<img src="/static/img/logo/logo.jpeg" alt="{{ cfg.SITE_NAME }}">
+<h1>Em breve estaremos disponíveis</h1>
+<p class="sub">Estamos com problemas de conexão. A equipa técnica já foi notificada.</p>
+{% if motivo %}<p style="color:var(--cinza);font-size:.85rem">{{ motivo }}</p>{% endif %}
+<p style="font-size:.85rem;color:var(--cinza)">Contacto directo: <a href="tel:{{ cfg.PHONE|replace(' ','') }}" style="color:var(--vermelho-2)">{{ cfg.PHONE }}</a> · <a href="mailto:{{ cfg.EMAIL }}" style="color:var(--vermelho-2)">{{ cfg.EMAIL }}</a></p>
+</div></div></body></html>

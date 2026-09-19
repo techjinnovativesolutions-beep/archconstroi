@@ -1,0 +1,21 @@
+{
+  "name": "archconstroi",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Arch Constroi – Engenharia e Construção Civil. Website institucional + Painel Administrativo em Cloudflare Workers (JavaScript). Desenvolvido por Tech J Innovative Solutions.",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev --ip 0.0.0.0 --port 8080",
+    "deploy": "wrangler deploy",
+    "db:migrate": "wrangler d1 migrations apply archconstroi-db",
+    "manifest": "node scripts/build-manifest.mjs",
+    "export-db": "node scripts/export-db.mjs",
+    "hash-pass": "node scripts/hash-pass.mjs",
+    "test:render": "node tests/render-parity.mjs",
+    "test:e2e": "node tests/e2e.mjs"
+  },
+  "devDependencies": {
+    "wrangler": "^4.0.0",
+    "ws": "^8.21.3"
+  }
+}

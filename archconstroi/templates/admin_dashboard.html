@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<!--
+  ============================================================
+   Arch Constroi – Painel Administrativo
+   Desenvolvido por: Tech J Innovative Solutions
+  ============================================================
+-->
+<html lang="pt" data-tema="noite">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Painel · {{ cfg.SITE_NAME }}</title>
+<link rel="icon" href="/static/img/logo/logo.jpeg">
+<link rel="stylesheet" href="/static/css/estilo.css">
+</head>
+<body>
+<div class="painel">
+  <aside class="lateral">
+    <div class="marca">
+      <img src="/static/img/logo/logo.jpeg" alt="{{ cfg.SITE_NAME }}">
+      <span><b>ARCH</b>CONSTROI<small>Painel Administrativo</small></span>
+    </div>
+    <button class="aba on" data-sec="visao">▦ Visão Geral</button>
+    <button class="aba" data-sec="solicitacoes">📥 Solicitações</button>
+    <button class="aba" data-sec="conversas">💬 Conversas</button>
+    <button class="aba" data-sec="alertas">🔔 Alertas &amp; Debug</button>
+    <button class="aba" data-sec="auditoria">🛡 Auditoria</button>
+    <button class="aba" data-sec="sistema">⚙ Sistema</button>
+    <a href="/" target="_blank" rel="noopener">🌐 Ver site</a>
+    <a href="/painel/logout">⎋ Terminar sessão</a>
+  </aside>
+
+  <main class="conteudo-painel">
+    <div class="barra">
+      <div>
+        <h2 style="margin:0">Bem-vindo, {{ admin }}</h2>
+        <span style="font-size:.85rem;color:var(--cinza)">Monitorização de solicitações e transacções em tempo real</span>
+      </div>
+      <span class="pill off" id="estadoWs">● a ligar…</span>
+    </div>
+
+    <input type="hidden" id="csrf" value="{{ csrf }}">
+
+    <!-- VISÃO GERAL -->
+    <section class="painel-sec on" id="sec-visao">
+      <div class="kpis" id="kpis">
+        <div class="kpi"><b id="k-total">{{ stats.total }}</b><span>Solicitações</span></div>
+        <div class="kpi vermelho"><b id="k-novos">{{ stats.novos }}</b><span>Novas</span></div>
+        <div class="kpi"><b id="k-and">{{ stats.andamento }}</b><span>Em andamento</span></div>
+        <div class="kpi"><b id="k-conc">{{ stats.concluidos }}</b><span>Concluídas</span></div>
+        <div class="kpi"><b id="k-msgs">{{ stats.mensagens }}</b><span>Mensagens</span></div>
+        <div class="kpi"><b id="k-conv">{{ stats.conversao }}%</b><span>Conversão</span></div>
+      </div>
+
+      <div class="grid g2" style="gap:18px">
+        <div>
+          <h3>Solicitações por dia (14 dias)</h3>
+          <div class="grafico">
+            {% set maxv = (stats.por_dia|map(attribute='c')|max) if stats.por_dia else 1 %}
+            {% for d in stats.por_dia %}
+              <div style="height:{{ (d.c / maxv * 100)|round }}%" title="{{ d.d }}: {{ d.c }}"><span>{{ d.c }}</span></div>
+            {% else %}
+              <div style="height:6%"><span>0</span></div>
+            {% endfor %}
+          </div>
+        </div>
+        <div>
+          <h3>Serviços mais pedidos</h3>
+          <div class="card" style="padding:18px">
+            {% for s in stats.por_servico %}
+              <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.05)">
+                <span style="font-size:.9rem">{{ s.servico or '—' }}</span><b style="color:var(--vermelho-2)">{{ s.c }}</b>
+              </div>
+            {% else %}<p style="color:var(--cinza);margin:0">Ainda sem dados.</p>{% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <h3 style="margin-top:26px">Últimas entradas</h3>
+      <div class="card" style="padding:6px 14px">
+        <table>
+          <thead><tr><th>#</th><th>Cliente</th><th>Serviço</th><th>Estado</th><th>Data</th><th></th></tr></thead>
+          <tbody id="tbUltimos"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- SOLICITAÇÕES -->
+    <section class="painel-sec" id="sec-solicitacoes">
+      <div class="barra">
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <select id="filtroEstado" class="mini">
+            <option value="todos">Todos os estados</option>
+            <option value="novo">Novos</option>
+            <option value="em_andamento">Em andamento</option>
+            <option value="concluido">Concluídos</option>
+            <option value="arquivado">Arquivados</option>
+          </select>
+          <input id="pesquisa" class="mini" placeholder="Pesquisar nome, empresa, e-mail" style="min-width:250px">
+        </div>
+        <button class="mini" id="btnRecarregar">↻ Actualizar</button>
+      </div>
+      <div class="card" style="padding:6px 14px">
+        <table>
+          <thead><tr><th>#</th><th>Cliente</th><th>Empresa</th><th>Contactos</th><th>Serviço</th><th>Estado</th><th>Data</th><th>Acções</th></tr></thead>
+          <tbody id="tbLeads"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- CONVERSAS -->
+    <section class="painel-sec" id="sec-conversas">
+      <h3>Conversas em tempo real</h3>
+      <p style="color:var(--cinza);font-size:.9rem">Seleccione uma solicitação na lista para abrir o histórico e responder.
+        As respostas seguem por WebSocket para o cliente e podem ser enviadas por e-mail ou preparar chamada telefónica.</p>
+      <div class="grid g2" style="gap:18px;align-items:start">
+        <div class="card" style="padding:6px 14px;max-height:520px;overflow:auto">
+          <table><thead><tr><th>#</th><th>Cliente</th><th>Estado</th></tr></thead><tbody id="tbConversas"></tbody></table>
+        </div>
+        <div class="card" id="painelChat" style="padding:0;overflow:hidden">
+          <div style="padding:14px 18px;border-bottom:1px solid var(--linha)">
+            <b id="chatTitulo">Nenhuma conversa aberta</b>
+            <div id="chatLinks" style="font-size:.8rem;color:var(--cinza);margin-top:4px"></div>
+          </div>
+          <div class="fluxo" id="chatFluxo" style="max-height:320px;overflow:auto;padding:16px;display:flex;flex-direction:column;gap:10px"></div>
+          <form id="chatForm" style="display:flex;gap:8px;padding:12px;border-top:1px solid var(--linha)">
+            <select id="chatCanal" class="mini"><option value="painel">Painel</option><option value="email">E-mail</option><option value="sms">SMS/Chamada</option></select>
+            <input id="chatCorpo" placeholder="Escrever resposta…" maxlength="2000"
+              style="flex:1;padding:11px;background:rgba(0,0,0,.5);border:1px solid var(--linha);border-radius:9px;color:#fff">
+            <button class="btn btn-p" type="submit" style="padding:11px 18px">Enviar</button>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- ALERTAS -->
+    <section class="painel-sec" id="sec-alertas">
+      <div class="barra">
+        <h3 style="margin:0">Alertas de segurança, dependências e debug</h3>
+        <div style="display:flex;gap:8px">
+          <button class="mini" id="btnDiagnostico">🩺 Executar diagnóstico</button>
+          <button class="mini" id="btnLidos">✓ Marcar como lidos</button>
+        </div>
+      </div>
+      <div id="listaAlertas">
+        {% for a in alertas %}
+        <div class="alerta {{ a.nivel }}">
+          <b>{{ a.titulo }} <small style="color:var(--cinza);font-weight:400">· {{ a.origem }} · {{ a.created_at }}</small></b>
+          <small>{{ a.detalhe }}</small><br>
+          {% if a.accao %}<small style="color:#ffd469">Acção: {{ a.accao }}</small>{% endif %}
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+
+    <!-- AUDITORIA -->
+    <section class="painel-sec" id="sec-auditoria">
+      <h3>Registo de auditoria</h3>
+      <div class="card" style="padding:6px 14px">
+        <table><thead><tr><th>Evento</th><th>IP</th><th>Detalhe</th><th>Data</th></tr></thead>
+        <tbody>
+          {% for a in auditoria %}
+          <tr><td>{{ a.evento }}</td><td>{{ a.ip }}</td><td>{{ a.detalhe }}</td><td>{{ a.created_at }}</td></tr>
+          {% else %}<tr><td colspan="4" style="color:var(--cinza)">Sem registos.</td></tr>{% endfor %}
+        </tbody></table>
+      </div>
+    </section>
+
+    <!-- SISTEMA -->
+    <section class="painel-sec" id="sec-sistema">
+      <h3>Configuração do servidor</h3>
+      <div class="grid g2" style="gap:16px">
+        <div class="card">
+          <h3>Modo de manutenção</h3>
+          <p style="color:var(--cinza);font-size:.9rem">Quando activo, todas as páginas públicas exibem a mensagem
+            “Em breve estaremos disponíveis — estamos com problemas de conexão.” O painel continua acessível.</p>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <input id="motivoManut" class="mini" placeholder="Motivo (opcional)" style="flex:1;min-width:180px">
+            <button class="mini" id="btnManut">{{ 'Desactivar' if manutencao.on else 'Activar' }} manutenção</button>
+          </div>
+          <p id="estadoManut" style="margin-top:10px;font-size:.85rem;color:var(--cinza)">
+            Estado actual: <b>{{ 'ACTIVO' if manutencao.on else 'inactivo' }}</b></p>
+        </div>
+        <div class="card">
+          <h3>Ambiente</h3>
+          <p style="color:var(--cinza);font-size:.9rem">Servidor aplicacional Uvicorn/ASGI, preparado para publicação
+            atrás do <b>IIS do Windows 11</b> com ARR + URL Rewrite (proxy reverso para http://127.0.0.1:8080,
+            incluindo WebSockets).</p>
+          <p style="color:var(--cinza);font-size:.9rem;margin:0">Base de dados: SQLite com WAL e consultas
+            parametrizadas · Sessões assinadas · Cabeçalhos CSP/HSTS activos.</p>
+        </div>
+        <div class="card">
+          <h3>Credenciais</h3>
+          <p style="color:var(--cinza);font-size:.9rem">A palavra-passe é guardada apenas como hash
+            PBKDF2-HMAC-SHA256 (260 000 iterações + salt aleatório). Nunca é armazenada em texto simples.</p>
+          <p style="color:var(--cinza);font-size:.9rem;margin:0">Para alterar defina as variáveis de ambiente
+            <code>ARCH_ADMIN_USER</code> e <code>ARCH_ADMIN_PASS</code> e apague <code>data/archconstroi.db</code>.</p>
+        </div>
+        <div class="card">
+          <h3>Diagnóstico de versões</h3>
+          <div id="tabelaDiag" style="font-size:.88rem;color:var(--cinza)">Execute o diagnóstico no separador Alertas.</div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="modal" id="modal"><div class="modal-in" id="modalIn"></div></div>
+<script src="/static/js/painel.js"></script>
+</body>
+</html>

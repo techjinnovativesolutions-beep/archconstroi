@@ -1,0 +1,16 @@
+# Arch Constroi – variáveis locais para `wrangler dev`
+# Copie para .dev.vars e ajuste. Em produção use `wrangler secret put`.
+
+# Chave para assinar as sessões (sem valor fixo = chave de desenvolvimento)
+ARCH_SECRET_KEY=
+
+# Conta de administração criada automaticamente se não existir na base
+ARCH_ADMIN_USER=belarmino.bengue1960@gmail.com
+ARCH_ADMIN_PASS=A4cc@
+
+# SMTP opcional para respostas por e-mail a partir do painel
+ARCH_SMTP_HOST=smtp.gmail.com
+ARCH_SMTP_PORT=587
+ARCH_SMTP_USER=conctatos@archconstroi.com
+ARCH_SMTP_PASS=
+ARCH_SMTP_FROM=conctatos@archconstroi.com
