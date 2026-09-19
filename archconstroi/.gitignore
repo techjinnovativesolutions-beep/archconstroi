@@ -8,3 +8,7 @@ __pycache__/
 
 # Estado local do wrangler dev (D1/DO locais)
 .state/
+
+# SQLite temp files
+*.db-wal
+*.db-shm
