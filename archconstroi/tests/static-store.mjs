@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 import path from "node:path";
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
-const STATIC = path.resolve(ROOT, "..", "cloudflare-static", "static", "js");
+const STATIC = path.resolve(ROOT, "..", "deploy", "static", "js");
 
 /* ambiente mínimo de navegador */
 const mem = new Map();
